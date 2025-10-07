@@ -5,14 +5,14 @@ plugins {
 
 android {
 
-    namespace = "com.example.edgedetection"
+    namespace = "com.example.edgedetectionapp"
 
-    compileSdk = 33
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.edgedetection"
+        applicationId = "com.example.edgedetectionapp"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
