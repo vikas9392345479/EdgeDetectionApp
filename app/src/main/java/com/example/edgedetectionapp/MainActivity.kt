@@ -2,6 +2,7 @@ package com.example.edgedetectionapp
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.os.Bundle
 import android.os.Handler
@@ -36,7 +37,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED) {
+            != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 100)
         }
     }
@@ -53,15 +55,104 @@ class MainActivity : AppCompatActivity() {
         backgroundThread.join()
     }
 
+    // Open the camera
+    private fun openCamera() {
+        val manager = getSystemService(CAMERA_SERVICE) as CameraManager
+        try {
+            val cameraId = manager.cameraIdList[0] // back camera
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestCameraPermission()
+                return
+            }
+            manager.openCamera(cameraId, stateCallback, backgroundHandler)
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    // Camera state callback
+    private val stateCallback = object : CameraDevice.StateCallback() {
+        override fun onOpened(camera: CameraDevice) {
+            cameraDevice = camera
+            createCameraPreview()
+        }
+
+        override fun onDisconnected(camera: CameraDevice) {
+            camera.close()
+        }
+
+        override fun onError(camera: CameraDevice, error: Int) {
+            camera.close()
+        }
+    }
+
+    // Create camera preview
+    private fun createCameraPreview() {
+        val texture: SurfaceTexture = textureView.surfaceTexture ?: return
+        texture.setDefaultBufferSize(textureView.width, textureView.height)
+        val surface = Surface(texture)
+
+        try {
+            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            captureRequestBuilder.addTarget(surface)
+
+            cameraDevice.createCaptureSession(
+                listOf(surface),
+                object : CameraCaptureSession.StateCallback() {
+                    override fun onConfigured(session: CameraCaptureSession) {
+                        cameraCaptureSessions = session
+                        captureRequestBuilder.set(
+                            CaptureRequest.CONTROL_MODE,
+                            CameraMetadata.CONTROL_MODE_AUTO
+                        )
+                        cameraCaptureSessions.setRepeatingRequest(
+                            captureRequestBuilder.build(),
+                            null,
+                            backgroundHandler
+                        )
+                    }
+
+                    override fun onConfigureFailed(session: CameraCaptureSession) {}
+                },
+                backgroundHandler
+            )
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         startBackgroundThread()
-        // Camera open code will go here in the next step
+
+        if (textureView.isAvailable) {
+            openCamera()
+        } else {
+            textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+                override fun onSurfaceTextureAvailable(
+                    surface: SurfaceTexture,
+                    width: Int,
+                    height: Int
+                ) {
+                    openCamera()
+                }
+
+                override fun onSurfaceTextureSizeChanged(
+                    surface: SurfaceTexture,
+                    width: Int,
+                    height: Int
+                ) {}
+
+                override fun onSurfaceTextureDestroyed(surface: SurfaceTexture) = true
+
+                override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
+            }
+        }
     }
 
     override fun onPause() {
         super.onPause()
         stopBackgroundThread()
-        // Camera close code will go here in the next step
+        cameraDevice.close()
     }
 }
