@@ -2,6 +2,7 @@ package com.example.edgedetectionapp
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.os.Bundle
@@ -12,12 +13,11 @@ import android.view.TextureView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var textureView: TextureView
-
-    // Camera2 variables
     private lateinit var cameraDevice: CameraDevice
     private lateinit var captureRequestBuilder: CaptureRequest.Builder
     private lateinit var cameraCaptureSessions: CameraCaptureSession
@@ -25,27 +25,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var backgroundThread: HandlerThread
 
     // --------------------
-    // JNI Integration
+    // Stubbed JNI functions
     // --------------------
-    external fun stringFromJNI(): String
+    fun stringFromJNI(): String {
+        return "JNI skipped (stub)"
+    }
 
-    companion object {
-        init {
-            System.loadLibrary("native-lib")
-        }
+    fun processFrameJNI(frameData: ByteArray, width: Int, height: Int): String {
+        return "Frame processing skipped (stub)"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         textureView = findViewById(R.id.textureView)
 
-        // Test JNI call
-        val msgFromJNI = stringFromJNI()
-        println(msgFromJNI) // Or use Log.d("JNI", msgFromJNI)
+        // Test stub function
+        println(stringFromJNI())
 
-        // Request camera permission
         requestCameraPermission()
     }
 
@@ -71,7 +68,7 @@ class MainActivity : AppCompatActivity() {
     private fun openCamera() {
         val manager = getSystemService(CAMERA_SERVICE) as CameraManager
         try {
-            val cameraId = manager.cameraIdList[0] // back camera
+            val cameraId = manager.cameraIdList[0]
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 requestCameraPermission()
                 return
@@ -85,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     private val stateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
             cameraDevice = camera
-            createCameraPreview() // 6th commit: start preview
+            createCameraPreview()
         }
 
         override fun onDisconnected(camera: CameraDevice) {
@@ -97,9 +94,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --------------------
-    // 6th commit: Camera2 preview session
-    // --------------------
     private fun createCameraPreview() {
         val texture: SurfaceTexture = textureView.surfaceTexture ?: return
         texture.setDefaultBufferSize(textureView.width, textureView.height)
@@ -123,6 +117,13 @@ class MainActivity : AppCompatActivity() {
                             null,
                             backgroundHandler
                         )
+
+                        // Get frame and call stubbed process function
+                        val frameBytes = getFrameBytes()
+                        frameBytes?.let {
+                            val msg = processFrameJNI(it, textureView.width, textureView.height)
+                            println(msg)
+                        }
                     }
 
                     override fun onConfigureFailed(session: CameraCaptureSession) {}
@@ -134,6 +135,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getFrameBytes(): ByteArray? {
+        val bitmap: Bitmap = textureView.bitmap ?: return null
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+        return stream.toByteArray()
+    }
+
     override fun onResume() {
         super.onResume()
         startBackgroundThread()
@@ -142,22 +150,12 @@ class MainActivity : AppCompatActivity() {
             openCamera()
         } else {
             textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-                override fun onSurfaceTextureAvailable(
-                    surface: SurfaceTexture,
-                    width: Int,
-                    height: Int
-                ) {
+                override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
                     openCamera()
                 }
 
-                override fun onSurfaceTextureSizeChanged(
-                    surface: SurfaceTexture,
-                    width: Int,
-                    height: Int
-                ) {}
-
+                override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
                 override fun onSurfaceTextureDestroyed(surface: SurfaceTexture) = true
-
                 override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
             }
         }
