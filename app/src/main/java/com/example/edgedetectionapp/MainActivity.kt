@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     private val stateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
             cameraDevice = camera
-            createCameraPreview()
+            createCameraPreview() // 6th commit: start preview
         }
 
         override fun onDisconnected(camera: CameraDevice) {
@@ -97,6 +97,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // --------------------
+    // 6th commit: Camera2 preview session
+    // --------------------
     private fun createCameraPreview() {
         val texture: SurfaceTexture = textureView.surfaceTexture ?: return
         texture.setDefaultBufferSize(textureView.width, textureView.height)
