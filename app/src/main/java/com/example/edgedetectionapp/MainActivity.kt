@@ -24,12 +24,26 @@ class MainActivity : AppCompatActivity() {
     private lateinit var backgroundHandler: Handler
     private lateinit var backgroundThread: HandlerThread
 
+    // --------------------
+    // JNI Integration
+    // --------------------
+    external fun stringFromJNI(): String
+
+    companion object {
+        init {
+            System.loadLibrary("native-lib")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Reference TextureView
         textureView = findViewById(R.id.textureView)
+
+        // Test JNI call
+        val msgFromJNI = stringFromJNI()
+        println(msgFromJNI) // Or use Log.d("JNI", msgFromJNI)
 
         // Request camera permission
         requestCameraPermission()
@@ -43,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Start background thread for Camera2
     private fun startBackgroundThread() {
         backgroundThread = HandlerThread("Camera Background")
         backgroundThread.start()
@@ -55,7 +68,6 @@ class MainActivity : AppCompatActivity() {
         backgroundThread.join()
     }
 
-    // Open the camera
     private fun openCamera() {
         val manager = getSystemService(CAMERA_SERVICE) as CameraManager
         try {
@@ -70,7 +82,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Camera state callback
     private val stateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
             cameraDevice = camera
@@ -86,7 +97,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Create camera preview
     private fun createCameraPreview() {
         val texture: SurfaceTexture = textureView.surfaceTexture ?: return
         texture.setDefaultBufferSize(textureView.width, textureView.height)
