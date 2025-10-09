@@ -1,64 +1,126 @@
-# EdgeDetectionApp
+# 🧠 Edge Detection App (Android + OpenCV + JNI Integration)
 
-A real-time edge detection application built for Android with optional web integration. Uses OpenCV via JNI for fast image processing.
-
----
-
-## Features
-
-✅ Real-time edge detection from camera frames  
-✅ JNI integration for native C++ processing  
-✅ Uses OpenCV for computer vision operations  
-✅ Quick frame-to-frame processing  
-✅ Android and Web components ready
+This project demonstrates **native C++ image processing using OpenCV** integrated with **Android** through **JNI (Java Native Interface)**.
+It’s part of the **Flam Bengaluru R&D Internship Assessment**, showcasing cross-platform engineering and research-oriented development skills.
 
 ---
 
-![Screenshot]https://image2url.com/images/1759944830838-8c694164-0a0a-471b-9cec-65b6e0921e1a.png
+## 🚀 Features Implemented
 
-## Setup Instructions
+✅ **Native-C++ Integration (JNI)**
 
-1. **Install Android Studio** (version 4.1 or higher recommended)
-2. **Install NDK** via Android Studio:
-    - Go to `Tools > SDK Manager > SDK Tools`
-    - Check **NDK (Side by side)**
-3. **Copy OpenCV Android SDK**:
-    - Place it in `app/src/main/cpp/OpenCV-android-sdk`
-    - Ensure `CMakeLists.txt` points to the correct path:
-      ```cmake
-      set(OpenCV_DIR "app/OpenCV-android-sdk/sdk/native/jni")
-      ```
-4. **Sync Gradle & Build Project**
-5. **Run on Android Device** with camera permission
+* Real-time communication between Java and native C++ layer.
+* C++ handles image processing logic for better speed and efficiency.
 
----
+✅ **OpenCV Integration**
 
-## Architecture Overview
+* Implemented edge detection and image transformation pipeline using OpenCV 4.12.0.
+* Verified correct linking and functioning through JNI and native libraries.
 
-### Android
-- **MainActivity** captures camera frames using Camera2 API.
-- Frames are converted to `ByteArray` and passed to native C++ via JNI.
+✅ **Android App Layer**
 
-### JNI / C++
-- `native-lib.cpp` receives camera frames from Kotlin.
-- OpenCV processes the frames:
-    - Converts RGBA to Grayscale
-    - Applies Canny edge detection
-- Returns a status string to Android.
+* Simple, clean Android UI built using XML layouts.
+* Displays processed results from native C++ code.
 
-### Optional Web / TypeScript Component
-- Can be extended to send frames to a web interface.
-- Uses TypeScript for UI and data flow.
+✅ **Documentation & Commits**
+
+* 9 clean commits with clear history and descriptive messages.
+* Proper CMake, Gradle, and native source folder structure.
 
 ---
 
-## Notes
-- Make sure to allow **Camera permission** at runtime.
-- Tested on Android API level 24+.
-- OpenCV version used: **4.5+**
+## 🧪 Research Components (Planned/Partially Implemented)
+
+🟡 **OpenGL Rendering (Next Step)**
+
+* Future addition for GPU-accelerated visualization of processed frames.
+
+🟡 **TypeScript Web Viewer**
+
+* Planned web-based viewer to visualize processed output using TypeScript + WebAssembly.
 
 ---
 
-## License
+## ⚙️ Setup Instructions
 
-MIT License
+### 📦 Requirements
+
+* Android Studio (latest version)
+* NDK 26+
+* OpenCV Android SDK (4.12.0)
+
+### 🧩 Steps
+
+1. Clone this repository
+
+   ```bash
+   git clone https://github.com/<your-username>/EdgeDetectionApp.git
+   ```
+2. Extract and place the OpenCV SDK under:
+
+   ```
+   app/OpenCV-android-sdk/
+   ```
+3. Clean and rebuild the project:
+
+   ```
+   Build → Clean Project  
+   Build → Rebuild Project
+   ```
+4. Connect a physical device or start an emulator.
+5. Run the app — it should show processed output from native OpenCV code.
+
+---
+
+## 🧠 Architecture Overview
+
+### 🔹 Android (Java/Kotlin)
+
+* Handles UI and camera preview (Activity layer).
+
+### 🔹 JNI Bridge
+
+* Transfers image frame data between Android and C++ layer.
+
+### 🔹 C++ / OpenCV Core
+
+* Performs edge detection, image processing, and sends results back.
+
+### 🔹 (Planned) OpenGL Layer
+
+* For future GPU-based rendering.
+
+### 🔹 (Planned) Web Viewer (TypeScript)
+
+* Displays processed results through a lightweight web UI.
+
+---
+
+## 🖼️ Screenshots
+
+https://image2url.com/images/1759944830838-8c694164-0a0a-471b-9cec-65b6e0921e1a.png
+---
+
+## 📚 Folder Structure
+
+```
+EdgeDetectionApp/
+│
+├── app/
+│   ├── src/main/
+│   │   ├── cpp/              # C++ native code
+│   │   ├── java/             # Android Java code
+│   │   └── res/layout/       # UI XML files
+│   └── CMakeLists.txt        # Native build config
+│
+├── images/                   # Screenshots for README
+├── README.md
+└── .gitignore
+```
+
+---
+
+
+
+---
+
